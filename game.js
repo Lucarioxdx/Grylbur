@@ -1,7 +1,7 @@
 const config = {
     type: Phaser.AUTO, 
-    width: 1920,
-    height: 1080,
+    width: 1900,
+    height: 980,
     physics: {
         default: 'arcade',
         arcade: {
@@ -20,9 +20,14 @@ const game = new Phaser.Game (config);
 let enemy;
 let player;
 let cursors;
-let tree1;
-let tree2;
-let tree3;
+let tree1, tree2, tree3, tree4, tree5,  tree6,  tree7,  tree8,  tree9,  tree10,  tree11,  tree12,  tree13,  tree14,  tree15,  tree16,  tree17,  tree18,  tree19,  tree20,  tree21,  tree22,  tree23;
+let obstacles;
+let enemyspeed = 50;
+let enemyChaseSpeed = 200;
+let chaseDistance = 300;
+let enemyDirectionTimer = 0;
+
+
 
 function preload () {
     this.load.image('jogador', 'jogador_esquerda.png');
@@ -40,8 +45,13 @@ function create () {
     this.cameras.main.setBackgroundColor("#001405");
     player = this.physics.add.sprite (400, 400, 'jogador');
     player.setScale(2);
+    player.setCollideWorldBounds (true)
+
     enemy = this.physics.add.sprite (1400, 600, 'inimigo');
     enemy.setScale(4);
+    enemy.setCollideWorldBounds (true)
+
+
     tree1 = this.physics.add.sprite (450, 205, 'arvore1');
     tree1.setScale(4);
     tree2 = this.physics.add.sprite (678, 456, 'arvore2');
@@ -89,10 +99,18 @@ function create () {
     tree23 = this.physics.add.sprite (1900, 234, 'arvore3');
     tree23.setScale(6);
     cursors = this.input.keyboard.createCursorKeys();
+
+    obstacles = this.physics.add.staticGroup ();
+    obstacles.addMultiple ([tree1, tree2, tree3, tree4, tree5,  tree6,  tree7,  tree8,  tree9,  tree10,  tree11,  tree12,  tree13,  tree14,  tree15,  tree16,  tree17,  tree18,  tree19,  tree20,  tree21,  tree22,  tree23])
+
+    this.physics.add.collider (enemy, obstacles);
+    this.
 }
 
 
-function update () {
+
+
+function update (time, delta) {
     if (cursors.left.isDown) {
         player.x -= 3;
     } else if (cursors.right.isDown)  {
@@ -103,5 +121,17 @@ function update () {
         player.y -= 3;
     } else if (cursors.down.isDown) {
         player.y += 3;
+    }
+
+    let dist = Phaser.Math.Distance.Between (enemy.x, enemy.y, player.x, player.y);
+    if (dist < chaseDistance) {
+        this.physics.moveToObject (enemy, player, enemyChaseSpeed);        
+    } else {
+        enemyDirectionTimer += delta;
+        if (enemyDirectionTimer > 2000) {
+            enemyDirectionTimer = 0;
+            let angle = Phaser.Math.Between (0, 360);
+            this.physics.velocityFromAngle (angle, enemyspeed, enemy.body.velocity);
+        }
     }
 }
