@@ -6,7 +6,7 @@ const config = {
         default: 'arcade',
         arcade: {
             gravity: {y: 0},
-            debug: true,
+            debug: false,
         }
     },
     scene: {
@@ -26,6 +26,13 @@ let enemyspeed = 50;
 let enemyChaseSpeed = 200;
 let chaseDistance = 300;
 let enemyDirectionTimer = 0;
+let bullets;
+let score = 0;
+let life = 100;
+let enemylife = 1000;
+let scoretext, lifetext, enemylifetext, victorytext;
+let playerdirection = "right";
+let playercolision = true;
 
 
 
@@ -50,6 +57,12 @@ function create () {
     enemy = this.physics.add.sprite (1400, 600, 'inimigo');
     enemy.setScale(4);
     enemy.setCollideWorldBounds (true)
+    enemy.setSize (enemy.width*0.1, enemy.height*0.1).setOffset (enemy.width*0.1, enemy.height*0.1)
+    bullets = this.physics.add.group ({
+        defaultKey: 'balab',
+        maxSize: 1,
+        runChildUpdate: true,
+    })
 
     obstacles = this.physics.add.staticGroup ();
     obstacles.create(450, 205, 'arvore1').setScale(4).refreshBody();
@@ -101,13 +114,16 @@ function create () {
 
     this.physics.add.collider (player, obstacles);
     this.physics.add.collider (enemy, obstacles);
-    
-   
+    this.physics.add.overlap (bullets, enemy, hitenemy, null, this);
+    this.physics.add.overlap (enemy, bullets, hitenemy, null, this);
+    this.physics.add.overlap (player, enemy, hitplayer, null, this);
 
     cursors = this.input.keyboard.createCursorKeys();
 
-   
-    
+   scoretext = this.add.text(16, 16, "Score: 0", {fontSize:"20px", fontFamily:"Comic Sans MS", fill:"purple"});
+   lifetext = this.add.text(16, 45, "Life: 100", {fontSize:"20px", fontFamily:"Comic Sans MS", fill:"Green"});
+   enemylifetext = this.add.text(1293, 16, `Life Enemy: ${enemylife}`, {fontSize:"20px", fontFamily:"Comic Sans MS", fill:"Green"});
+   victorytext = this.add.text(605, 310, "Grylbur Aniquiled", {fontSize:"50px", fontFamily:"Comic Sans MS", fill:"Red"}).setVisible(false) 
 }
 
 
@@ -115,15 +131,25 @@ function create () {
 
 function update (time, delta) {
     if (cursors.left.isDown) {
-        player.x -= 3;
+       // player.x -= 3;
+       player.setVelocityX (-200);
+       playerdirection = "left";
     } else if (cursors.right.isDown)  {
-        player.x += 3;
+        //player.x += 3;
+        player.setVelocityX (200);
+        playerdirection = "right";
     }
 
     if (cursors.up.isDown) {
-        player.y -= 3;
+        //player.y -= 3;
+        player.setVelocityY (-200);
     } else if (cursors.down.isDown) {
-        player.y += 3;
+       // player.y += 3;
+       player.setVelocityY (200);
+    }
+    if (Phaser.Input.Keyboard.JustDown(cursors.space)){
+        playerbullets ();
+        
     }
 
     let dist = Phaser.Math.Distance.Between (enemy.x, enemy.y, player.x, player.y);
