@@ -22,14 +22,14 @@ let player;
 let cursors;
 let tree1, tree2, tree3, tree4, tree5,  tree6,  tree7,  tree8,  tree9,  tree10,  tree11,  tree12,  tree13,  tree14,  tree15,  tree16,  tree17,  tree18,  tree19,  tree20,  tree21,  tree22,  tree23;
 let obstacles;
-let enemyspeed = 50;
+let enemyspeed = 47;
 let enemyChaseSpeed = 200;
 let chaseDistance = 300;
 let enemyDirectionTimer = 0;
 let bullets;
 let score = 0;
-let life = 100;
-let enemylife = 1000;
+let life = 50;
+let enemylife = 100;
 let scoretext, lifetext, enemylifetext, victorytext;
 let playerdirection = "right";
 let playercolision = true;
@@ -60,7 +60,7 @@ function create () {
     enemy.setSize (enemy.width*0.1, enemy.height*0.1).setOffset (enemy.width*0.1, enemy.height*0.1)
     bullets = this.physics.add.group ({
         defaultKey: 'balab',
-        maxSize: 1,
+        maxSize: 5,
         runChildUpdate: true,
     })
 
@@ -121,7 +121,7 @@ function create () {
     cursors = this.input.keyboard.createCursorKeys();
 
    scoretext = this.add.text(16, 16, "Score: 0", {fontSize:"20px", fontFamily:"Comic Sans MS", fill:"purple"});
-   lifetext = this.add.text(16, 45, "Life: 100", {fontSize:"20px", fontFamily:"Comic Sans MS", fill:"Green"});
+   lifetext = this.add.text(16, 45, "Life: 50", {fontSize:"20px", fontFamily:"Comic Sans MS", fill:"Green"});
    enemylifetext = this.add.text(1293, 16, `Life Enemy: ${enemylife}`, {fontSize:"20px", fontFamily:"Comic Sans MS", fill:"Green"});
    victorytext = this.add.text(605, 310, "Grylbur Aniquiled", {fontSize:"50px", fontFamily:"Comic Sans MS", fill:"Red"}).setVisible(false) 
 }
@@ -163,4 +163,51 @@ function update (time, delta) {
             this.physics.velocityFromAngle (angle, enemyspeed, enemy.body.velocity);
         }
     }
+    bullets.children.each(bullet => {
+        if (bullet.active && (bullet.x < 0||bullet.x > 1900))
+            bullet.setActive(false).setVisible(false)
+    })
 }
+    function playerbullets(){
+        const bullet = bullets.get (player.x, player.y - 20)
+        if (bullet){
+            bullet.setActive(true).setVisible(true).setScale(1);
+            bullet.body.enable = true;
+            bullet.body.allowGravity = false
+            if (playerdirection === "right"){
+                bullet.setTexture("balab");
+                bullet.setVelocityX (1000);
+            }
+            else {
+                bullet.setTexture("bala");
+                bullet.setVelocityX (-1000);
+            }
+        }
+    }
+    function hitenemy(enemy, bullets){
+        bullets.disableBody(true, true);
+        enemylife--;
+        enemylifetext.setText(`Enemy Life: ${enemylife}`);
+        if (enemylife <= 0){
+            enemy.disableBody(true, true);
+            victorytext.setVisible(true);
+        }
+
+    }
+    function hitplayer(player, enemy){
+        if (!playercolision) return;
+        playercolision = false;
+        life--;
+        lifetext.setText(`Life: ${life}`);
+        if (life <= 0){
+            player.disableBody(true, true);
+            const gameovertext = this.add.text(605, 310, "Loserrr!", {fontSize: "50px", fontFamily: "Comic Sans MS", fill: "red"});
+            
+        } else{
+            player.setAlpha(0.5);
+            this.time.delayedCall(1000, ()=>{
+                player.setAlpha(1);
+                playercolision = true;
+            })
+        }
+    }
